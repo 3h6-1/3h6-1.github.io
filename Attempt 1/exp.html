@@ -128,6 +128,7 @@ function callback(ev) {
 			butterflySpray[i][k] = 0x7fffffff;
 			// Find the object.
 			if (worker.GetURL.a.length == 0x7fffffff) {
+				console.log("The \"length\" field of the butterfly was overwritten.");
 				// Store index of butterfly
 				var butterflyIndex = i;
 				// Remove references
