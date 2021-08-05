@@ -1,6 +1,5 @@
 <pre>test123</pre>
 <script>
-w = iTunes.createWindow();
-w.dealloc();
-w = null;
+  const app = iTunes.softwareApplicationWithBundleID_('com.apple.calculator')
+  app.launchWithURL_options_suspended_('calc://1337', {}, false);
 </script>
