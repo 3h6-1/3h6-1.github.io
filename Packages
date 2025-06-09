@@ -1,0 +1,59 @@
+Package: com.3h6-1.imread
+Name: IMRead
+Version: 1.0
+Architecture: iphoneos-arm
+Description: Automatically marks messages as read after clearing their notification
+Maintainer: noname <umarov.m@northeastern.edu>
+Author: noname <umarov.m@northeastern.edu>
+Section: Tweaks
+Depends: firmware (>= 14.0)
+Filename: debs/com.3h6-1.imread_1.0_iphoneos-arm.deb
+Size: 4806
+MD5sum: fc7ae0ea926bd7932acbefb0bdae1430
+SHA1: 28173aa8813cd04a34a6452eab827c1e1510822f
+SHA256: 326b70043e0898fa5d33a1e396c8c88ab8ee001e7921048d5479fbea8e74ccce
+
+Package: com.3h6-1.imread
+Name: IMRead
+Version: 1.0
+Architecture: iphoneos-arm64
+Description: Automatically marks messages as read after clearing their notification
+Maintainer: noname <umarov.m@northeastern.edu>
+Author: noname <umarov.m@northeastern.edu>
+Section: Tweaks
+Depends: firmware (>= 14.0)
+Filename: debs/com.3h6-1.imread_1.0_iphoneos-arm64.deb
+Size: 4914
+MD5sum: a4e550c813122a5e442036bf1ffba79f
+SHA1: 262b3cb2764fb351723ac83299cd7bd5b52fe005
+SHA256: 27862ee8021a07345c118186d6204b8cfd323f9cda0ec87fda67bfd91f321db0
+
+Package: com.edog813.shitos
+Name: ShitOS
+Version: 2.0
+Architecture: iphoneos-arm
+Description: The best ios theme ever made
+Maintainer: noname <umarov.m@northeastern.edu>
+Author: Edog813, noname <umarov.m@northeastern.edu>
+Section: Themes
+Depends: com.spark.snowboard |  com.anemonetheming.anemone
+Filename: debs/shitos_iphoneos-arm_2_0.deb
+Size: 3903696
+MD5sum: 3724ecd7801e3fa07ed46a2d584b41ea
+SHA1: e9afd6072a038ea74cb5cbb0fae7e463faf7f648
+SHA256: 429b45988b12296f5fc26f2abf2274c94d1fbc3ec96dcb853479548bdb708dfa
+
+Package: com.edog813.shitos
+Name: ShitOS
+Version: 2.0
+Architecture: iphoneos-arm64
+Description: The best ios theme ever made
+Maintainer: noname <umarov.m@northeastern.edu>
+Author: Edog813, noname <umarov.m@northeastern.edu>
+Section: Themes
+Depends: com.spark.snowboard |  com.anemonetheming.anemone
+Filename: debs/shitos_iphoneos-arm64_2_0.deb
+Size: 3903712
+MD5sum: 33b3d5c886a8d817c6719a8ff9eb1a0d
+SHA1: 1d973de6bd824031cc6cebe1ef398f0f8f9b81ff
+SHA256: 639bfe112d47f1aff4c3fe3c99914a7535646a76ead08c0d1f2f2d37f39464ef

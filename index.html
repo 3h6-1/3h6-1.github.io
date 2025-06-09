@@ -1,17 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>3h6_1's jailbreak repo</title>
+    <title>noname's jailbreak repo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        
+        .button-container {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        button {
+            display: block;
+            width: 280px;
+            padding: 20px 30px;
+            margin: 15px auto;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            background-color: #007AFF;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.02);
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Different colors for each package manager */
+        button:nth-child(1) { background-color: #8B7355; } /* Cydia */
+        button:nth-child(3) { background-color: #FFD700; color: #333; } /* Sileo */
+        button:nth-child(5) { background-color: #00CED1; } /* Zebra */
+        button:nth-child(7) { background-color: #32CD32; } /* Installer */
+        
+        button:nth-child(1):hover { background-color: #6B5645; }
+        button:nth-child(3):hover { background-color: #00B0B0; }
+        button:nth-child(5):hover { background-color: #E6C200; }
+        button:nth-child(7):hover { background-color: #228B22; }
+    </style>
 </head>
 <body>
-<center>
-<button type="button" onclick="document.location = \"cydia://url/https://cydia.saurik.com/api/share#?source=https://umarovm.github.io/\"">Add to Cydia</button>
-<br><br>
-<button type="button" onclick="document.location = \"sileo://source/https://umarovm.github.io/\"">Add to Sileo</button>
-<br><br>
-<button type="button" onclick="document.location = \"zbra://sources/add/https://umarovm.github.io/\"">Add to Zebra</button>
-<br><br>
-<button type="button" onclick="document.location = \"installer://add/repo=https://umarovm.github.io/\"">Add to Installer</button>
-</center>
+    <div class="button-container">
+        <button type="button" onclick="document.location = 'cydia://url/https://cydia.saurik.com/api/share#?source=https://3h6-1.github.io/'">Add to Cydia</button>
+        
+        <button type="button" onclick="document.location = 'sileo://source/https://3h6-1.github.io/'">Add to Sileo</button>
+        
+        <button type="button" onclick="document.location = 'zbra://sources/add/https://3h6-1.github.io/'">Add to Zebra</button>
+        
+        <button type="button" onclick="document.location = 'installer://add/repo=https://3h6-1.github.io/'">Add to Installer</button>
+    </div>
 </body>
 </html>
